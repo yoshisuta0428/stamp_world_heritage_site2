@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日本の世界遺産スタンプラリー</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1>🗾 日本の世界遺産スタンプラリー</h1>
+
+<div class="container">
+  <div class="card" id="list"></div>
+  <button onclick="generateImage()">📸 スタンプ帳画像を作成</button>
+</div>
+
+<canvas id="canvas" width="700" height="820"></canvas>
+
+<script>
+const heritages = [
+  "姫路城","屋久島","白神山地","古都京都の文化財",
+  "古都奈良の文化財","原爆ドーム","厳島神社",
+  "日光の社寺","富士山","琉球王国のグスク及び関連遺産群"
+];
+
+const positions = {
+  "姫路城": { x: 360, y: 430 },
+  "屋久島": { x: 300, y: 560 },
+  "白神山地": { x: 430, y: 260 },
+  "古都京都の文化財": { x: 370, y: 400 },
+  "古都奈良の文化財": { x: 380, y: 420 },
+  "原爆ドーム": { x: 320, y: 460 },
+  "厳島神社": { x: 330, y: 480 },
+  "日光の社寺": { x: 430, y: 330 },
+  "富士山": { x: 410, y: 380 },
+  "琉球王国のグスク及び関連遺産群": { x: 260, y: 650 }
+};
+
+let state = JSON.parse(localStorage.getItem("jpStampMap")) || {};
+const list = document.getElementById("list");
+
+function renderList() {
+  list.innerHTML = "";
+  heritages.forEach(name => {
+    const row = document.createElement("div");
+    row.className = "item";
+
+    const stamp = document.createElement("div");
+    stamp.className = "stamp" + (state[name] ? " checked" : "");
+    stamp.textContent = "";
+
+    stamp.onclick = () => {
+      state[name] = !state[name];
+      localStorage.setItem("jpStampMap", JSON.stringify(state));
+      renderList();
+    };
+
+    const label = document.createElement("div");
+    label.textContent = name;
+
+    row.appendChild(stamp);
+    row.appendChild(label);
+    list.appendChild(row);
+  });
+}
+
+function drawStamp(ctx, x, y) {
+  const size = 36;
+  const half = size/2;
+  ctx.strokeStyle = "#c62828";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(x - half/2, y);
+  ctx.lineTo(x, y + half/2);
+  ctx.lineTo(x + half, y - half/2);
+  ctx.stroke();
+}
+
+function generateImage() {
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+
+  const mapImg = new Image();
+  mapImg.src = "japan_map.png";
+
+  mapImg.onload = () => {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // 背景
+    ctx.fillStyle = "#faf7f2";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    // タイトル
+    ctx.font = "26px sans-serif";
+    ctx.fillStyle = "#000";
+    ctx.textAlign = "center";
+    ctx.fillText("日本の世界遺産スタンプ帳", canvas.width / 2, 40);
+
+    // 地図
+    ctx.drawImage(mapImg, 0, 80, 700, 650);
+
+    // チェックマーク描画
+    Object.keys(state).forEach(name => {
+      if (state[name] && positions[name]) {
+        drawStamp(ctx, positions[name].x, positions[name].y);
+      }
+    });
+
+    // 日付
+    ctx.font = "14px sans-serif";
+    ctx.fillStyle = "#555";
+    ctx.textAlign = "right";
+    ctx.fillText(new Date().toLocaleDateString(), 680, 800);
+  };
+}
+
+renderList();
+</script>
+
+</body>
+</html>
+
