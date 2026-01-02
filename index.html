@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>世界遺産スタンプラリー（日本）</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #f4f6f8;
+}
+
+.screen { display: none; padding: 16px; }
+.screen.active { display: block; }
+
+h1 { text-align: center; font-size: 22px; }
+
+.list label {
+  display: block;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 16px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+}
+
+.ad {
+  background: #ddd;
+  padding: 12px;
+  margin: 12px 0;
+  text-align: center;
+  font-size: 13px;
+}
+
+.video-ad {
+  height: 180px;
+  background: #000;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+canvas {
+  width: 100%;
+  max-width: 420px;
+  display: block;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 12px;
+}
+
+.share {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.share a {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
+  border-radius: 8px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.x { background: #000; }
+.line { background: #06c755; }
+</style>
+</head>
+
+<body>
+
+<!-- チェック画面 -->
+<div id="screen-check" class="screen active">
+<h1>世界遺産スタンプラリー（日本）</h1>
+
+<div class="ad">広告枠</div>
+
+<input id="userName" type="text" placeholder="作成者名を入力">
+
+<div class="list">
+<label><input type="checkbox" value="知床"> 知床</label>
+<label><input type="checkbox" value="北海道・北東北の縄文遺跡群"> 北海道・北東北の縄文遺跡群</label>
+<label><input type="checkbox" value="白神山地"> 白神山地</label>
+<label><input type="checkbox" value="平泉－仏国土（浄土）を表す建築・庭園及び考古学的遺跡群"> 平泉－仏国土（浄土）を表す建築・庭園及び考古学的遺跡群</label>
+<label><input type="checkbox" value="日光の社寺"> 日光の社寺</label>
+<label><input type="checkbox" value="富岡製糸場と絹産業遺産群"> 富岡製糸場と絹産業遺産群</label>
+<label><input type="checkbox" value="ル・コルビュジエの建築作品－近代建築運動への顕著な貢献"> ル・コルビュジエの建築作品－近代建築運動への顕著な貢献</label>
+<label><input type="checkbox" value="小笠原諸島"> 小笠原諸島</label>
+<label><input type="checkbox" value="富士山－信仰の対象と芸術の源泉"> 富士山－信仰の対象と芸術の源泉</label>
+<label><input type="checkbox" value="佐渡島の金山"> 佐渡島の金山</label>
+<label><input type="checkbox" value="白川郷・五箇山の合掌造り集落"> 白川郷・五箇山の合掌造り集落</label>
+<label><input type="checkbox" value="古都京都の文化財"> 古都京都の文化財</label>
+<label><input type="checkbox" value="姫路城"> 姫路城</label>
+<label><input type="checkbox" value="古都奈良の文化財"> 古都奈良の文化財</label>
+<label><input type="checkbox" value="法隆寺地域の仏教建造物"> 法隆寺地域の仏教建造物</label>
+<label><input type="checkbox" value="紀伊山地の霊場と参詣道"> 紀伊山地の霊場と参詣道</label>
+<label><input type="checkbox" value="百舌鳥・古市古墳群－古代日本の墳墓群"> 百舌鳥・古市古墳群－古代日本の墳墓群</label>
+<label><input type="checkbox" value="原爆ドーム"> 原爆ドーム</label>
+<label><input type="checkbox" value="石見銀山遺跡とその文化的景観"> 石見銀山遺跡とその文化的景観</label>
+<label><input type="checkbox" value="厳島神社"> 厳島神社</label>
+<label><input type="checkbox" value="明治日本の産業革命遺産 製鉄・製鋼、造船、石炭産業"> 明治日本の産業革命遺産 製鉄・製鋼、造船、石炭産業</label>
+<label><input type="checkbox" value="「神宿る島」宗像・沖ノ島と関連遺産群"> 「神宿る島」宗像・沖ノ島と関連遺産群</label>
+<label><input type="checkbox" value="長崎と天草地方の潜伏キリシタン関連遺産"> 長崎と天草地方の潜伏キリシタン関連遺産</label>
+<label><input type="checkbox" value="屋久島"> 屋久島</label>
+<label><input type="checkbox" value="琉球王国のグスク及び関連遺産群"> 琉球王国のグスク及び関連遺産群</label>
+<label><input type="checkbox" value="奄美大島、徳之島、沖縄島北部及び西表島"> 奄美大島、徳之島、沖縄島北部及び西表島</label>
+</div>
+
+<button id="toLoading">画像を生成</button>
+</div>
+
+<!-- ローディング -->
+<div id="screen-loading" class="screen">
+<h1>生成中です…</h1>
+<div class="video-ad" id="videoAd">動画広告（5秒）</div>
+<button id="toResult" style="display:none;">画像を見る</button>
+</div>
+
+<!-- 結果 -->
+<div id="screen-result" class="screen">
+<h1>完成しました</h1>
+<canvas id="canvas"></canvas>
+
+<div class="share">
+<a id="shareX" class="x" target="_blank">Xでシェア</a>
+<a id="shareLine" class="line" target="_blank">LINEでシェア</a>
+</div>
+</div>
+
+<script>
+const screens={
+  check:document.getElementById("screen-check"),
+  loading:document.getElementById("screen-loading"),
+  result:document.getElementById("screen-result")
+};
+
+function showScreen(n){
+  Object.values(screens).forEach(s=>s.classList.remove("active"));
+  screens[n].classList.add("active");
+}
+
+function today(){
+  const d=new Date();
+  return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
+}
+
+const positions = {
+  "知床": { x: 1220, y: 60 },
+  "北海道・北東北の縄文遺跡群": { x: 1120, y: 380 },
+  "白神山地": { x: 880, y: 370 },
+  "平泉－仏国土（浄土）を表す建築・庭園及び考古学的遺跡群": { x: 1160, y: 540 },
+  "日光の社寺": { x: 1100, y: 700 },
+  "富岡製糸場と絹産業遺産群": { x: 1080, y: 850 },
+  "ル・コルビュジエの建築作品－近代建築運動への顕著な貢献": { x: 1190, y: 990 },
+  "小笠原諸島": { x: 1280, y: 1140 },
+  "富士山－信仰の対象と芸術の源泉": { x: 940, y: 980 },
+  "佐渡島の金山": { x: 860, y: 520 },
+  "白川郷・五箇山の合掌造り集落": { x: 740, y: 600 },
+  "古都京都の文化財": { x: 660, y: 460 },
+  "姫路城": { x: 560, y: 730 },
+  "古都奈良の文化財": { x: 800, y: 1000 },
+  "法隆寺地域の仏教建造物": { x: 660, y: 1070 },
+  "紀伊山地の霊場と参詣道": { x: 535, y: 1160 },
+  "百舌鳥・古市古墳群－古代日本の墳墓群": { x: 400, y: 1170 },
+  "原爆ドーム": { x: 420, y: 690 },
+  "石見銀山遺跡とその文化的景観": { x: 270, y: 700 },
+  "厳島神社": { x: 260, y: 840 },
+  "明治日本の産業革命遺産 製鉄・製鋼、造船、石炭産業": { x: 90, y: 710 },
+  "「神宿る島」宗像・沖ノ島と関連遺産群": { x: 115, y: 900 },
+  "長崎と天草地方の潜伏キリシタン関連遺産": { x: 80, y: 1040 },
+  "屋久島": { x: 170, y: 1170 },
+  "琉球王国のグスク及び関連遺産群": { x: 930, y: 1170 },
+  "奄美大島、徳之島、沖縄島北部及び西表島": { x: 1075, y: 1090 }
+};
+
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+const mapImg=new Image();
+const stampImg=new Image();
+mapImg.src="japan_map.png";
+stampImg.src="checkmark.png";
+
+let selected=[];
+
+document.getElementById("toLoading").onclick=()=>{
+  selected=[...document.querySelectorAll("input:checked")].map(c=>c.value);
+  showScreen("loading");
+  setTimeout(()=>{
+    document.getElementById("videoAd").textContent="広告終了";
+    document.getElementById("toResult").style.display="block";
+  },5000);
+};
+
+document.getElementById("toResult").onclick=()=>{
+  showScreen("result");
+
+  function draw(){
+    canvas.width=mapImg.width;
+    canvas.height=mapImg.height;
+    ctx.drawImage(mapImg,0,0);
+
+    const stampSize=200;
+    selected.forEach(n=>{
+      const p=positions[n];
+      if(!p)return;
+      ctx.drawImage(stampImg,p.x-stampSize/2,p.y-stampSize/2,stampSize,stampSize);
+    });
+
+    ctx.font="bold 36px sans-serif";
+    ctx.fillStyle="rgba(0,0,0,0.7)";
+    ctx.fillText("作成者： "+(userName.value||"No Name"),20,165);
+    ctx.fillText("作成日： "+today(),20,210);
+  }
+
+  if(mapImg.complete) draw();
+  else mapImg.onload = draw;
+
+  const url=encodeURIComponent(location.href);
+  shareX.href=`https://twitter.com/intent/tweet?text=${encodeURIComponent("世界遺産スタンプラリーを作った！")}&url=${url}`;
+  shareLine.href=`https://social-plugins.line.me/lineit/share?url=${url}`;
+};
+</script>
+
+</body>
+</html>
