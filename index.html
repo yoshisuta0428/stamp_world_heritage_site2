@@ -10,17 +10,13 @@ body {
   margin: 0;
   font-family: system-ui, sans-serif;
   background: #f4f6f8;
-  overflow-x: hidden;
+  overflow-x: hidden; /* 横スクロール防止 */
 }
 
 .screen { display: none; padding: 16px; }
 .screen.active { display: block; }
 
-h1 {
-  text-align: center;
-  font-size: 22px;
-  margin: 8px 0 16px;
-}
+h1 { text-align: center; font-size: 22px; }
 
 .list label {
   display: block;
@@ -29,7 +25,8 @@ h1 {
 }
 
 input[type="text"] {
-  width: calc(100% - 32px);
+  width: 100%;
+  max-width: 420px;
   padding: 10px;
   margin-bottom: 12px;
   box-sizing: border-box;
@@ -37,8 +34,10 @@ input[type="text"] {
 
 button {
   width: 100%;
+  max-width: 420px;
   padding: 14px;
-  margin-top: 16px;
+  margin: 16px auto 0;
+  display: block;
   font-size: 16px;
   border-radius: 8px;
   border: none;
@@ -64,8 +63,6 @@ button {
 }
 
 canvas {
-  width: 100%;
-  max-width: 420px;
   display: block;
   margin: 0 auto;
   background: #fff;
@@ -76,6 +73,9 @@ canvas {
   display: flex;
   gap: 12px;
   margin-top: 16px;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .share a {
@@ -153,20 +153,20 @@ canvas {
 </div>
 
 <script>
-const screens = {
-  check: document.getElementById("screen-check"),
-  loading: document.getElementById("screen-loading"),
-  result: document.getElementById("screen-result")
+const screens={
+  check:screenCheck=document.getElementById("screen-check"),
+  loading:screenLoading=document.getElementById("screen-loading"),
+  result:screenResult=document.getElementById("screen-result")
 };
 
-function showScreen(name){
-  Object.values(screens).forEach(s => s.classList.remove("active"));
-  screens[name].classList.add("active");
+function showScreen(n){
+  Object.values(screens).forEach(s=>s.classList.remove("active"));
+  screens[n].classList.add("active");
 }
 
 function today(){
-  const d = new Date();
-  return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`;
+  const d=new Date();
+  return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
 }
 
 const positions = {
@@ -198,69 +198,62 @@ const positions = {
   "奄美大島、徳之島、沖縄島北部及び西表島": { x: 1075, y: 1090 }
 };
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-const mapImg = new Image();
-const stampImg = new Image();
-mapImg.src = "japan_map.png";
-stampImg.src = "checkmark.png";
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+const mapImg=new Image();
+const stampImg=new Image();
+mapImg.src="japan_map.png";
+stampImg.src="checkmark.png";
 
-let selected = [];
+let selected=[];
 
-document.getElementById("toLoading").onclick = () => {
-  selected = [...document.querySelectorAll("input:checked")].map(c => c.value);
+document.getElementById("toLoading").onclick=()=>{
+  selected=[...document.querySelectorAll("input:checked")].map(c=>c.value);
   showScreen("loading");
-  setTimeout(() => {
-    document.getElementById("videoAd").textContent = "広告終了";
-    document.getElementById("toResult").style.display = "block";
-  }, 5000);
+  setTimeout(()=>{
+    videoAd.textContent="広告終了";
+    toResult.style.display="block";
+  },5000);
 };
 
-document.getElementById("toResult").onclick = () => {
+document.getElementById("toResult").onclick=()=>{
   showScreen("result");
 
-  const draw = () => {
-    canvas.width = mapImg.width;
-    canvas.height = mapImg.height;
-    ctx.drawImage(mapImg, 0, 0);
+  function draw(){
+    const dpr = window.devicePixelRatio || 1;
 
-    const stampSize = 200;
-    selected.forEach(name => {
-      const p = positions[name];
-      if (!p) return;
-      ctx.drawImage(
-        stampImg,
-        p.x - stampSize / 2,
-        p.y - stampSize / 2,
-        stampSize,
-        stampSize
-      );
+    const displayWidth = Math.min(window.innerWidth - 32, 420);
+    const scale = displayWidth / mapImg.width;
+
+    canvas.style.width = displayWidth + "px";
+    canvas.style.height = (mapImg.height * scale) + "px";
+
+    canvas.width = mapImg.width * scale * dpr;
+    canvas.height = mapImg.height * scale * dpr;
+
+    ctx.setTransform(scale * dpr, 0, 0, scale * dpr, 0, 0);
+
+    ctx.drawImage(mapImg,0,0);
+
+    const stampSize=200;
+    selected.forEach(n=>{
+      const p=positions[n];
+      if(!p) return;
+      ctx.drawImage(stampImg,p.x-stampSize/2,p.y-stampSize/2,stampSize,stampSize);
     });
 
-    ctx.font = "bold 36px sans-serif";
-    ctx.fillStyle = "rgba(0,0,0,0.7)";
-    ctx.textAlign = "left";
-    ctx.fillText("作成者： " + (userName.value || "No Name"), 20, 165);
-    ctx.fillText("作成日： " + today(), 20, 210);
-  };
-
-  if (mapImg.complete && stampImg.complete) {
-    draw();
-  } else {
-    let loaded = 0;
-    const onLoad = () => {
-      loaded++;
-      if (loaded === 2) draw();
-    };
-    mapImg.onload = onLoad;
-    stampImg.onload = onLoad;
+    ctx.font="bold 36px sans-serif";
+    ctx.fillStyle="rgba(0,0,0,0.7)";
+    ctx.fillText("作成者： "+(userName.value||"No Name"),20,165);
+    ctx.fillText("作成日： "+today(),20,210);
   }
 
-  const url = encodeURIComponent(location.href);
-  shareX.href =
-    `https://twitter.com/intent/tweet?text=${encodeURIComponent("世界遺産スタンプラリーを作った！")}&url=${url}`;
-  shareLine.href =
-    `https://social-plugins.line.me/lineit/share?url=${url}`;
+  if(mapImg.complete) draw();
+  else mapImg.onload = draw;
+
+  const url=encodeURIComponent(location.href);
+  shareX.href=`https://twitter.com/intent/tweet?text=${encodeURIComponent("世界遺産スタンプラリーを作った！")}&url=${url}`;
+  shareLine.href=`https://social-plugins.line.me/lineit/share?url=${url}`;
 };
 </script>
 
