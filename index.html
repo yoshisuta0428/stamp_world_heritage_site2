@@ -36,30 +36,13 @@ button {
   width: 100%;
   max-width: 420px;
   padding: 14px;
-  margin: 16px auto 0;
+  margin: 12px auto 0;
   display: block;
   font-size: 16px;
   border-radius: 8px;
   border: none;
   background: #2563eb;
   color: #fff;
-}
-
-.ad {
-  background: #ddd;
-  padding: 12px;
-  margin: 12px 0;
-  text-align: center;
-  font-size: 13px;
-}
-
-.video-ad {
-  height: 180px;
-  background: #000;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 canvas {
@@ -98,9 +81,6 @@ canvas {
 
 <div id="screen-check" class="screen active">
 <h1>世界遺産スタンプラリー（日本）</h1>
-
-<div class="ad">広告枠</div>
-
 <input id="userName" type="text" placeholder="作成者名を入力">
 
 <div class="list">
@@ -110,40 +90,15 @@ canvas {
 <label><input type="checkbox" value="平泉－仏国土（浄土）を表す建築・庭園及び考古学的遺跡群"> 平泉－仏国土（浄土）を表す建築・庭園及び考古学的遺跡群</label>
 <label><input type="checkbox" value="日光の社寺"> 日光の社寺</label>
 <label><input type="checkbox" value="富岡製糸場と絹産業遺産群"> 富岡製糸場と絹産業遺産群</label>
-<label><input type="checkbox" value="ル・コルビュジエの建築作品－近代建築運動への顕著な貢献"> ル・コルビュジエの建築作品－近代建築運動への顕著な貢献</label>
-<label><input type="checkbox" value="小笠原諸島"> 小笠原諸島</label>
-<label><input type="checkbox" value="富士山－信仰の対象と芸術の源泉"> 富士山－信仰の対象と芸術の源泉</label>
-<label><input type="checkbox" value="佐渡島の金山"> 佐渡島の金山</label>
-<label><input type="checkbox" value="白川郷・五箇山の合掌造り集落"> 白川郷・五箇山の合掌造り集落</label>
-<label><input type="checkbox" value="古都京都の文化財"> 古都京都の文化財</label>
-<label><input type="checkbox" value="姫路城"> 姫路城</label>
-<label><input type="checkbox" value="古都奈良の文化財"> 古都奈良の文化財</label>
-<label><input type="checkbox" value="法隆寺地域の仏教建造物"> 法隆寺地域の仏教建造物</label>
-<label><input type="checkbox" value="紀伊山地の霊場と参詣道"> 紀伊山地の霊場と参詣道</label>
-<label><input type="checkbox" value="百舌鳥・古市古墳群－古代日本の墳墓群"> 百舌鳥・古市古墳群－古代日本の墳墓群</label>
-<label><input type="checkbox" value="原爆ドーム"> 原爆ドーム</label>
-<label><input type="checkbox" value="石見銀山遺跡とその文化的景観"> 石見銀山遺跡とその文化的景観</label>
-<label><input type="checkbox" value="厳島神社"> 厳島神社</label>
-<label><input type="checkbox" value="明治日本の産業革命遺産 製鉄・製鋼、造船、石炭産業"> 明治日本の産業革命遺産 製鉄・製鋼、造船、石炭産業</label>
-<label><input type="checkbox" value="「神宿る島」宗像・沖ノ島と関連遺産群"> 「神宿る島」宗像・沖ノ島と関連遺産群</label>
-<label><input type="checkbox" value="長崎と天草地方の潜伏キリシタン関連遺産"> 長崎と天草地方の潜伏キリシタン関連遺産</label>
-<label><input type="checkbox" value="屋久島"> 屋久島</label>
-<label><input type="checkbox" value="琉球王国のグスク及び関連遺産群"> 琉球王国のグスク及び関連遺産群</label>
-<label><input type="checkbox" value="奄美大島、徳之島、沖縄島北部及び西表島"> 奄美大島、徳之島、沖縄島北部及び西表島</label>
 </div>
 
-<button id="toLoading">画像を生成</button>
-</div>
-
-<div id="screen-loading" class="screen">
-<h1>生成中です…</h1>
-<div class="video-ad" id="videoAd">動画広告（5秒）</div>
-<button id="toResult" style="display:none;">画像を見る</button>
+<button id="toResult">画像を生成</button>
 </div>
 
 <div id="screen-result" class="screen">
 <h1>完成しました</h1>
-<canvas id="canvas"></canvas>
+<canvas id="viewCanvas"></canvas>
+<button id="saveImage">画像を保存</button>
 
 <div class="share">
 <a id="shareX" class="x" target="_blank">Xでシェア</a>
@@ -153,9 +108,8 @@ canvas {
 
 <script>
 const screens={
-  check:document.getElementById("screen-check"),
-  loading:document.getElementById("screen-loading"),
-  result:document.getElementById("screen-result")
+  check:screenCheck=document.getElementById("screen-check"),
+  result:screenResult=document.getElementById("screen-result")
 };
 
 function showScreen(n){
@@ -163,63 +117,66 @@ function showScreen(n){
   screens[n].classList.add("active");
 }
 
-function today(){
-  const d=new Date();
-  return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
-}
+const positions={
+  "知床":{x:1220,y:60},
+  "北海道・北東北の縄文遺跡群":{x:1120,y:380},
+  "白神山地":{x:880,y:370},
+  "平泉－仏国土（浄土）を表す建築・庭園及び考古学的遺跡群":{x:1160,y:540},
+  "日光の社寺":{x:1100,y:700},
+  "富岡製糸場と絹産業遺産群":{x:1080,y:850}
+};
 
-const positions = { /* ← あなたの座標そのまま */ };
-
-const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d");
 const mapImg=new Image();
 const stampImg=new Image();
 mapImg.src="japan_map.png";
 stampImg.src="checkmark.png";
 
+const viewCanvas=document.getElementById("viewCanvas");
+const viewCtx=viewCanvas.getContext("2d");
+
+const saveCanvas=document.createElement("canvas");
+const saveCtx=saveCanvas.getContext("2d");
+
 let selected=[];
 
-document.getElementById("toLoading").onclick=()=>{
-  selected=[...document.querySelectorAll("input:checked")].map(c=>c.value);
-  showScreen("loading");
-  setTimeout(()=>{
-    videoAd.textContent="広告終了";
-    toResult.style.display="block";
-  },5000);
-};
-
 document.getElementById("toResult").onclick=()=>{
+  selected=[...document.querySelectorAll("input:checked")].map(c=>c.value);
   showScreen("result");
 
-  const maxWidth = Math.min(window.innerWidth - 32, 420);
-  const scale = maxWidth / mapImg.width;
+  // 表示用
+  const scale=Math.min(420/mapImg.width,1);
+  viewCanvas.width=mapImg.width*scale;
+  viewCanvas.height=mapImg.height*scale;
+  viewCtx.drawImage(mapImg,0,0,viewCanvas.width,viewCanvas.height);
 
-  canvas.width = mapImg.width * scale;
-  canvas.height = mapImg.height * scale;
+  // 保存用（元サイズ）
+  saveCanvas.width=mapImg.width;
+  saveCanvas.height=mapImg.height;
+  saveCtx.drawImage(mapImg,0,0);
 
-  ctx.drawImage(mapImg,0,0,canvas.width,canvas.height);
-
-  const stampSize = 200 * scale;
   selected.forEach(n=>{
     const p=positions[n];
-    if(!p) return;
-    ctx.drawImage(
-      stampImg,
-      (p.x - 100) * scale,
-      (p.y - 100) * scale,
-      stampSize,
-      stampSize
-    );
+    if(!p)return;
+    viewCtx.drawImage(stampImg,(p.x-100)*scale,(p.y-100)*scale,200*scale,200*scale);
+    saveCtx.drawImage(stampImg,p.x-100,p.y-100,200,200);
   });
 
-  ctx.font = `${36 * scale}px sans-serif`;
-  ctx.fillStyle="rgba(0,0,0,0.7)";
-  ctx.fillText("作成者： "+(userName.value||"No Name"),20*scale,165*scale);
-  ctx.fillText("作成日： "+today(),20*scale,210*scale);
+  saveCtx.font="36px sans-serif";
+  saveCtx.fillText("作成者："+(userName.value||"No Name"),20,160);
 
   const url=encodeURIComponent(location.href);
-  shareX.href=`https://twitter.com/intent/tweet?text=${encodeURIComponent("世界遺産スタンプラリーを作った！")}&url=${url}`;
+  shareX.href=`https://twitter.com/intent/tweet?url=${url}`;
   shareLine.href=`https://social-plugins.line.me/lineit/share?url=${url}`;
+};
+
+document.getElementById("saveImage").onclick=()=>{
+  saveCanvas.toBlob(blob=>{
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="world-heritage.png";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
 };
 </script>
 
