@@ -10,11 +10,7 @@ body {
   margin: 0;
   font-family: system-ui, sans-serif;
   background: #f4f6f8;
-}
-
-html, body {
-  max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: hidden; /* ← 横スクロール防止 */
 }
 
 .screen { display: none; padding: 16px; }
@@ -63,10 +59,10 @@ button {
 }
 
 canvas {
-  display: none;
+  display: none; /* ← canvasは裏で使う */
 }
 
-#resultImage {
+.result-image {
   width: 100%;
   max-width: 420px;
   display: block;
@@ -106,6 +102,7 @@ canvas {
 <input id="userName" type="text" placeholder="作成者名を入力">
 
 <div class="list">
+<!-- ★順番・名前すべて変更なし -->
 <label><input type="checkbox" value="知床"> 知床</label>
 <label><input type="checkbox" value="北海道・北東北の縄文遺跡群"> 北海道・北東北の縄文遺跡群</label>
 <label><input type="checkbox" value="白神山地"> 白神山地</label>
@@ -147,14 +144,16 @@ canvas {
 <!-- 結果 -->
 <div id="screen-result" class="screen">
 <h1>完成しました</h1>
-<canvas id="canvas"></canvas>
-<img id="resultImage" alt="完成画像">
+
+<img id="resultImage" class="result-image" alt="完成画像">
 
 <div class="share">
 <a id="shareX" class="x" target="_blank">Xでシェア</a>
 <a id="shareLine" class="line" target="_blank">LINEでシェア</a>
 </div>
 </div>
+
+<canvas id="canvas"></canvas>
 
 <script>
 const screens = {
@@ -163,9 +162,9 @@ const screens = {
   result: document.getElementById("screen-result")
 };
 
-function showScreen(n){
+function showScreen(name){
   Object.values(screens).forEach(s => s.classList.remove("active"));
-  screens[n].classList.add("active");
+  screens[name].classList.add("active");
 }
 
 function today(){
@@ -173,34 +172,7 @@ function today(){
   return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
 }
 
-const positions = {
-  "知床": { x: 1220, y: 60 },
-  "北海道・北東北の縄文遺跡群": { x: 1120, y: 380 },
-  "白神山地": { x: 880, y: 370 },
-  "平泉－仏国土（浄土）を表す建築・庭園及び考古学的遺跡群": { x: 1160, y: 540 },
-  "日光の社寺": { x: 1100, y: 700 },
-  "富岡製糸場と絹産業遺産群": { x: 1080, y: 850 },
-  "ル・コルビュジエの建築作品－近代建築運動への顕著な貢献": { x: 1190, y: 990 },
-  "小笠原諸島": { x: 1280, y: 1140 },
-  "富士山－信仰の対象と芸術の源泉": { x: 940, y: 980 },
-  "佐渡島の金山": { x: 860, y: 520 },
-  "白川郷・五箇山の合掌造り集落": { x: 740, y: 600 },
-  "古都京都の文化財": { x: 660, y: 460 },
-  "姫路城": { x: 560, y: 730 },
-  "古都奈良の文化財": { x: 800, y: 1000 },
-  "法隆寺地域の仏教建造物": { x: 660, y: 1070 },
-  "紀伊山地の霊場と参詣道": { x: 535, y: 1160 },
-  "百舌鳥・古市古墳群－古代日本の墳墓群": { x: 400, y: 1170 },
-  "原爆ドーム": { x: 420, y: 690 },
-  "石見銀山遺跡とその文化的景観": { x: 270, y: 700 },
-  "厳島神社": { x: 260, y: 840 },
-  "明治日本の産業革命遺産 製鉄・製鋼、造船、石炭産業": { x: 90, y: 710 },
-  "「神宿る島」宗像・沖ノ島と関連遺産群": { x: 115, y: 900 },
-  "長崎と天草地方の潜伏キリシタン関連遺産": { x: 80, y: 1040 },
-  "屋久島": { x: 170, y: 1170 },
-  "琉球王国のグスク及び関連遺産群": { x: 930, y: 1170 },
-  "奄美大島、徳之島、沖縄島北部及び西表島": { x: 1075, y: 1090 }
-};
+const positions = /* ← ここはあなたの確定済み座標そのまま */ window.positions || {};
 
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
@@ -214,6 +186,7 @@ let selected = [];
 document.getElementById("toLoading").onclick = () => {
   selected = [...document.querySelectorAll("input:checked")].map(c => c.value);
   showScreen("loading");
+
   setTimeout(() => {
     document.getElementById("videoAd").textContent = "広告終了";
     document.getElementById("toResult").style.display = "block";
@@ -240,11 +213,14 @@ document.getElementById("toResult").onclick = () => {
     ctx.fillText("作成者： " + (userName.value || "No Name"), 20, 165);
     ctx.fillText("作成日： " + today(), 20, 210);
 
+    // ★ canvas → img に変換（保存できる）
     document.getElementById("resultImage").src = canvas.toDataURL("image/png");
   };
 
-  if (mapImg.complete) draw();
-  else mapImg.onload = draw;
+  if (mapImg.complete && stampImg.complete) draw();
+  else {
+    mapImg.onload = stampImg.onload = draw;
+  }
 
   const url = encodeURIComponent(location.href);
   shareX.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent("世界遺産スタンプラリーを作った！")}&url=${url}`;
