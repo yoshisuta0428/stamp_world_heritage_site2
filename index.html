@@ -6,13 +6,15 @@
 <title>世界遺産スタンプラリー（日本）</title>
 
 <style>
-html, body {
+body {
   margin: 0;
-  padding: 0;
-  max-width: 100%;
-  overflow-x: hidden;
   font-family: system-ui, sans-serif;
   background: #f4f6f8;
+}
+
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .screen { display: none; padding: 16px; }
@@ -61,12 +63,16 @@ button {
 }
 
 canvas {
+  display: none;
+}
+
+#resultImage {
   width: 100%;
   max-width: 420px;
   display: block;
   margin: 0 auto;
-  background: #fff;
   border-radius: 12px;
+  background: #fff;
 }
 
 .share {
@@ -142,7 +148,7 @@ canvas {
 <div id="screen-result" class="screen">
 <h1>完成しました</h1>
 <canvas id="canvas"></canvas>
-<button id="saveImage">画像を保存</button>
+<img id="resultImage" alt="完成画像">
 
 <div class="share">
 <a id="shareX" class="x" target="_blank">Xでシェア</a>
@@ -151,19 +157,19 @@ canvas {
 </div>
 
 <script>
-const screens={
-  check:document.getElementById("screen-check"),
-  loading:document.getElementById("screen-loading"),
-  result:document.getElementById("screen-result")
+const screens = {
+  check: document.getElementById("screen-check"),
+  loading: document.getElementById("screen-loading"),
+  result: document.getElementById("screen-result")
 };
 
 function showScreen(n){
-  Object.values(screens).forEach(s=>s.classList.remove("active"));
+  Object.values(screens).forEach(s => s.classList.remove("active"));
   screens[n].classList.add("active");
 }
 
 function today(){
-  const d=new Date();
+  const d = new Date();
   return `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()}`;
 }
 
@@ -196,64 +202,55 @@ const positions = {
   "奄美大島、徳之島、沖縄島北部及び西表島": { x: 1075, y: 1090 }
 };
 
-const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d");
-const mapImg=new Image();
-const stampImg=new Image();
-mapImg.src="japan_map.png";
-stampImg.src="checkmark.png";
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const mapImg = new Image();
+const stampImg = new Image();
+mapImg.src = "japan_map.png";
+stampImg.src = "checkmark.png";
 
-let selected=[];
+let selected = [];
 
-document.getElementById("toLoading").onclick=()=>{
-  selected=[...document.querySelectorAll("input:checked")].map(c=>c.value);
+document.getElementById("toLoading").onclick = () => {
+  selected = [...document.querySelectorAll("input:checked")].map(c => c.value);
   showScreen("loading");
-  setTimeout(()=>{
-    videoAd.textContent="広告終了";
-    toResult.style.display="block";
-  },5000);
+  setTimeout(() => {
+    document.getElementById("videoAd").textContent = "広告終了";
+    document.getElementById("toResult").style.display = "block";
+  }, 5000);
 };
 
-document.getElementById("toResult").onclick=()=>{
+document.getElementById("toResult").onclick = () => {
   showScreen("result");
 
-  function draw(){
-    canvas.width=mapImg.width;
-    canvas.height=mapImg.height;
-    ctx.drawImage(mapImg,0,0);
+  const draw = () => {
+    canvas.width = mapImg.width;
+    canvas.height = mapImg.height;
+    ctx.drawImage(mapImg, 0, 0);
 
-    const stampSize=200;
-    selected.forEach(n=>{
-      const p=positions[n];
-      if(!p)return;
-      ctx.drawImage(stampImg,p.x-stampSize/2,p.y-stampSize/2,stampSize,stampSize);
+    const stampSize = 200;
+    selected.forEach(n => {
+      const p = positions[n];
+      if (!p) return;
+      ctx.drawImage(stampImg, p.x - stampSize/2, p.y - stampSize/2, stampSize, stampSize);
     });
 
-    ctx.font="bold 36px sans-serif";
-    ctx.fillStyle="rgba(0,0,0,0.7)";
-    ctx.fillText("作成者： "+(userName.value||"No Name"),20,165);
-    ctx.fillText("作成日： "+today(),20,210);
-  }
+    ctx.font = "bold 36px sans-serif";
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillText("作成者： " + (userName.value || "No Name"), 20, 165);
+    ctx.fillText("作成日： " + today(), 20, 210);
 
-  if(mapImg.complete) draw();
+    document.getElementById("resultImage").src = canvas.toDataURL("image/png");
+  };
+
+  if (mapImg.complete) draw();
   else mapImg.onload = draw;
 
-  const url=encodeURIComponent(location.href);
-  shareX.href=`https://twitter.com/intent/tweet?text=${encodeURIComponent("世界遺産スタンプラリーを作った！")}&url=${url}`;
-  shareLine.href=`https://social-plugins.line.me/lineit/share?url=${url}`;
-};
-
-document.getElementById("saveImage").onclick = () => {
-  const link = document.createElement("a");
-  link.href = canvas.toDataURL("image/png");
-  link.download = "sekaiisan_stamp.png";
-
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  const url = encodeURIComponent(location.href);
+  shareX.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent("世界遺産スタンプラリーを作った！")}&url=${url}`;
+  shareLine.href = `https://social-plugins.line.me/lineit/share?url=${url}`;
 };
 </script>
 
 </body>
 </html>
-
